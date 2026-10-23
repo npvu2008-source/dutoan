@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dự Toán"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1C2321"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png"><title>Dự Toán – Minh Chương</title>
+<style>body{margin:0;background:#F4F5F2;font-family:'Segoe UI',sans-serif}#dtnap{color:#1C2321;padding:60px 24px;text-align:center;font-size:15px}</style>
+</head><body><div id="dtnap">Đang mở Dự Toán – Minh Chương…</div>
+<script>
+/* Dự Toán – Minh Chương · trang khởi động GitHub Pages (Rev24). API = link Ứng dụng web Apps Script (…/exec). */
+var API = 'https://script.google.com/macros/s/AKfycbzbahqNE9dQymDPTNxssFY8JZCrQLiTKU0eC5WfjgWNlgB1QvjPanMjfWwy5o36EDo48w/exec';
+function goi(fn, args) {
+  return fetch(API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({fn: fn, args: args || []}), redirect: 'follow'})
+    .then(function (r) { if (!r.ok) throw new Error('Máy chủ Google trả lỗi ' + r.status); return r.json(); })
+    .then(function (j) { if (!j.ok) throw new Error(j.loi); return j.data; });
+}
+/* giả google.script.run: google.script.run.withSuccessHandler(f).withFailureHandler(g).tenHam(...) → goi('tenHam', [...]) */
+function chay(ok, sai) {
+  return new Proxy({}, {get: function (t, k) {
+    if (k === 'withSuccessHandler') return function (f) { return chay(f, sai); };
+    if (k === 'withFailureHandler') return function (f) { return chay(ok, f); };
+    return function () { goi(k, [].slice.call(arguments)).then(ok || function () {}, sai || function (e) { console.error(e); }); };
+  }});
+}
+window.google = {script: {run: chay()}};
+function loi(e) { document.getElementById('dtnap').innerHTML = '<b style="color:#A3282B">Không mở được: ' + String(e && e.message || e) + '</b><br><br>Kiểm tra mạng rồi mở lại.'; }
+goi('giaoDien').then(function (html) {
+  var d = new DOMParser().parseFromString(html, 'text/html');
+  [].slice.call(d.head.querySelectorAll('style,link[rel=stylesheet]')).forEach(function (n) { document.head.appendChild(document.importNode(n, true)); });
+  var sc = [].slice.call(d.querySelectorAll('script')); sc.forEach(function (s) { s.parentNode.removeChild(s); });
+  document.body.innerHTML = d.body.innerHTML;
+  sc.forEach(function (s) { var n = document.createElement('script'); if (s.src) n.src = s.src; else n.text = s.textContent; document.body.appendChild(n); });
+}).catch(loi);
+</script></body></html>
